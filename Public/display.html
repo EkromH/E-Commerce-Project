@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .header img{
+        width: 50px;
+        height: 50px;
+        }
+        .logo {
+            margin-left: -1100px;
+        }
+
+        .header{
+            height: 50px;
+            width: 100%;
+            background-color: rgb(224, 224, 224);
+            box-shadow: 0px 0px 15px black ;
+            border-radius: 3px;
+            margin: 0px 0px;
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            justify-content: space-between;
+            padding: 15px;
+        }
+        .header .logo{
+            font-size: 30px;
+            font-weight: bold;
+            color: rgb(7, 108, 133);
+        }
+        h1 {
+            text-align: center;
+            margin-top: 80px;
+        }
+        
+        #checkoutItems {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            grid-gap: 20px;
+            justify-items: center;
+            margin-top: 10px;
+        }
+        
+        #checkoutItems div {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(255, 8, 8, 0.1);
+            text-align: center;
+            box-shadow: 0px 0px 15px rgb(12, 87, 156);
+        }
+        
+        img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin: 5px 0;
+        }
+        
+        #total {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            background-color: rgb(12, 58, 104);
+            color: #fff;
+            height: 30px;
+            padding: 10px;
+        }
+        #purchaseButton{
+            background-color: rgb(12, 58, 104);
+            height: 40px;
+            width: 150px;
+            margin-top: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        #purchaseButton:hover{
+            background-color: rgb(4, 121, 136);
+        }
+        .from{
+            text-align: left;
+        }
+        .from input{
+            margin-top: 3px;
+            width: 200px;
+            text-align: left;
+        }
+        textarea{
+            margin-top: 5px;
+            width: 200px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html"><img src="image/logo1.png" alt=""/></a>
+        <p class="logo"> SysTech BD</p>
+        <div class="cart"><i class="fa-solid fa-cart-shopping"></i><p id="count">0</p></div>
+    </div>
+    
+    <h1>Checkout</h1>
+    
+    <div id="checkoutItems"></div>
+    <div id="total"></div>
+    <div class="from">
+    <form id="purchaseForm">
+        <label for="fullName">Full Name:</label><br>
+        <input type="text" id="fullName" name="fullName" required><br>
+        <label for="mobile">Mobile:</label><br>
+        <input type="tel" id="mobile" name="mobile" required><br>
+        <label for="address">Address:</label><br>
+        <textarea id="address" name="address" required></textarea><br>
+        <button id="purchaseButton" >Purchase Now</button>
+    </form>
+</div>
+    <script>
+        const cartData = JSON.parse(localStorage.getItem('cart'));
+
+        // Function to handle purchase action
+        function handlePurchase(event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Get form input values
+            const fullName = document.getElementById('fullName').value;
+            const mobile = document.getElementById('mobile').value;
+            const address = document.getElementById('address').value;
+
+            // Validate form inputs
+            if (!fullName || !mobile || !address) {
+                alert('Please fill in Delivery Point to complete the purchase.');
+                return; // Exit function if any field is empty
+            }
+
+            let orderListMessage = 'Order List:\n';
+            cartData.forEach((item, index) => {
+            orderListMessage += `${item.title} - Quantity: ${item.quantity}\n`;
+            });
+
+    // Display order list message
+            alert(`Order Successful!\n\n${orderListMessage}`);
+            window.location.href = 'index.html'; // Change 'index.html' to your desired page
+        }
+
+        // Display purchased products
+        const checkoutItemsElement = document.getElementById('checkoutItems');
+        const totalElement = document.getElementById('total');
+        let total = 0;
+        cartData.forEach((item, index) => {
+            total += item.price * item.quantity;
+            checkoutItemsElement.innerHTML += `
+                <div>
+                    <img src="${item.image}" alt="${item.title}">
+                    <p>${item.title}</p>
+                    <p>Price: ${item.price}.00</p>
+                    <p>Quantity: 
+                        <button onclick="decreaseQuantity(${index})">-</button>
+                        <span id="quantity${index}">${item.quantity}</span>
+                        <button onclick="increaseQuantity(${index})">+</button>
+                    </p>
+                </div>
+            `;
+        });
+
+        // Display total
+        totalElement.textContent = `Total: $${total}.00`;
+
+        // Function to decrease quantity
+        function decreaseQuantity(index) {
+            if (cartData[index].quantity > 1) {
+                cartData[index].quantity--;
+                document.getElementById(`quantity${index}`).textContent = cartData[index].quantity;
+                updateLocalStorage();
+                recalculateTotal();
+            }
+        }
+
+        // Function to increase quantity
+        function increaseQuantity(index) {
+            cartData[index].quantity++;
+            document.getElementById(`quantity${index}`).textContent = cartData[index].quantity;
+            updateLocalStorage();
+            recalculateTotal();
+        }
+
+        // Function to update localStorage
+        function updateLocalStorage() {
+            localStorage.setItem('cart', JSON.stringify(cartData));
+        }
+
+        // Function to recalculate total
+        function recalculateTotal() {
+            total = cartData.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            totalElement.textContent = `Total: ${total}.00`;
+        }
+
+        document.getElementById('purchaseButton').addEventListener('click', handlePurchase);
+
+
+
+    </script>
+
+
+
+</body>
+</html>
