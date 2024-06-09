@@ -5,6 +5,6 @@ E-commerce site
 * 
 USE
 ===============
- HTML
- CSS
- JavaScript
+ * HTML
+ * CSS
+ * JavaScript
